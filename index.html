@@ -1,0 +1,463 @@
+<html>
+<head>
+<title>リズムフレンズ</title>
+</head>
+<body>
+
+<canvas width="1280" height="720" id="Bg_Canvas" style="position: absolute; z-index: 0"></canvas>
+<canvas width="1280" height="720" id="Kaban_Canvas" style="position: absolute; z-index: 1"></canvas>
+<canvas width="1280" height="720" id="Serval_Canvas" style="position: absolute; z-index: 2"></canvas>
+<canvas width="1280" height="720" id="Boss_Canvas" style="position: absolute; z-index: 1"></canvas>
+<canvas width="1280" height="720" id="Ball_Canvas" style="position: absolute; z-index: 1"></canvas>
+<canvas width="1280" height="720" id="Loading" style="position: absolute; z-index: 2"></canvas>
+<canvas width="1280" height="720" id="Monitor_Canvas" style="position: absolute; z-index: 1"></canvas>
+<canvas width="1280" height="720" id="Console" style="position: absolute; z-index: 1"></canvas>
+<canvas width="1280" height="720" id="Loading_Screen" style="position: absolute; z-index: 3"></canvas>
+<script type="text/javascript">
+<!--
+
+Loaded = 0;
+
+//以下フレンズ
+//ー背景画像
+var BackImage = new Image();
+BackImage.src = "Back.png"
+BackImage.onload = function(){
+  Loaded++;
+}
+
+//ーかばんちゃん
+var KabanImage = new Image();
+KabanImage.src = "Array_Kaban.png"
+KabanImage.onload = function(){
+  Loaded++;
+}
+
+//ーサーバルちゃん
+var ServalImage = new Image();
+ServalImage.src = "Array_Serval.png";
+ServalImage.onload = function(){
+  Loaded++;
+}
+
+//ーラッキービースト
+var BossImage = new Image();
+BossImage.src = "Array_Boss.png";
+BossImage.onload = function(){
+  Loaded++;
+}
+
+//ーボール
+var BallImage = new Image();
+BallImage.src = "Ball.png";
+BallImage.onload = function(){
+  Loaded++;
+}
+
+//ータイトル
+var TitleImage = new Image();
+TitleImage.src = "Title.png";
+TitleImage.onload = function(){
+  Loaded++;
+}
+
+//ー吹き出し
+var MonitorImage = new Image();
+MonitorImage.src = "Array_Monitor.png";
+MonitorImage.onload = function(){
+  Loaded++;
+}
+
+document.onkeydown = KeyPressed;
+
+ball_pos=0;
+ballstop=0;
+
+var audio = new Audio("Bgm.mp3");
+audio.onload = function(){
+  Loaded++;
+}
+
+point = 0;
+time1 = setInterval(dcd, 50);
+
+function dcd() {
+  var frame = 0;
+  var Friends_Canvas = document.getElementById('Loading_Screen');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+  Friends.clearRect(0, 0, Friends_w, Friends_h);
+  Friends.fillStyle = "black"; //塗り潰し色を緑に
+  Friends.fillRect(0,0,Friends_w, Friends_h);
+  Friends.fillStyle = "gray"; //塗り潰し色を緑に
+  Friends.fillRect(0,350,Loaded*160,30);
+  Friends.font = "italic 40px Arial"; //フォントにArial,40px,斜体を指定
+  Friends.fillStyle = "white"; //塗り潰し色を緑に
+  Friends.fillText("NowLoading...",40,350);      //テキストを塗り潰しで描画
+  Friends.beginPath();
+  Friends.fillStyle = 'white';
+  Friends.fill();
+
+  if(Loaded==7){
+    title(1);
+  }
+  if(Loaded==8){
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    clearInterval(time1);
+    Draw_BackImage();
+    setInterval(dec, 50);
+  }
+}
+
+function Cout(txt) {
+  var Friends_Canvas = document.getElementById('Console');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+  (function Friends_animation() {
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.font = "italic 40px Arial"; //フォントにArial,40px,斜体を指定
+    Friends.fillStyle = "white"; //塗り潰し色を緑に
+    Friends.fillText(txt,10,50);      //テキストを塗り潰しで描画
+    Friends.strokeStyle = "blue"; //輪郭線の色を青に
+    Friends.strokeText(txt,10,50);      //テキストを塗り潰しで描画
+  })()
+}
+
+function Monitor() {
+  var Friends_Canvas = document.getElementById('Monitor_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+  var frame = 0;
+
+  (function Friends_animation() {
+    Friends.beginPath();
+    Friends.drawImage(MonitorImage, (frame%3)*512,0,512,384,300,0,512,384);
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+    point++;
+    Cout("Score:"+point);
+
+    if(frame<52){
+      requestAnimationFrame(Friends_animation);
+    }
+  })();
+}
+
+function Boss_A() {
+  var Friends_Canvas = document.getElementById('Boss_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+  var frame = 0;
+
+  (function Friends_animation() {
+    Friends.beginPath();
+
+    if(frame%60<3){
+      Friends.clearRect(0, 0, Friends_w, Friends_h);
+      Friends.drawImage(BossImage, (frame%3)*128,0,128,144,215,495,128,144);
+    }
+
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+
+    requestAnimationFrame(Friends_animation);
+  })();
+}
+
+function Ball_A() {
+  var Friends_Canvas = document.getElementById('Ball_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+  var frame = 0;
+
+  (function Friends_animation() {
+    ball_pos=frame;
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.beginPath();
+    Friends.drawImage(BallImage, 0,0,31,32,615+frame*7,395-frame*12+frame*frame*0.55,31,32);
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+
+    if(frame<40&&!ballstop){
+      requestAnimationFrame(Friends_animation);
+    }
+  })();
+}
+
+function Ball_B() {
+  var Friends_Canvas = document.getElementById('Ball_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+  var frame = 0;
+
+  (function Friends_animation() {
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.beginPath();
+    Friends.drawImage(BallImage, 0,0,31,32,615+ball_pos*7-frame*3,395-ball_pos*12+ball_pos*ball_pos*0.55-frame*20,31-frame*1.5,32-frame*1.5);
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+
+    frame++;
+
+    if(frame<20){
+      requestAnimationFrame(Friends_animation);
+    }else{
+      Monitor();
+    }
+  })();
+}
+
+function Serval_A() {
+    var Friends_Canvas = document.getElementById('Serval_Canvas');
+    var Friends = Friends_Canvas.getContext('2d');
+    var Friends_w = Friends_Canvas.width;
+    var Friends_h = Friends_Canvas.height;
+
+    var frame = 0;
+
+  (function Friends_animation() {
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.beginPath();
+
+    if(frame==0){
+      state=0;
+    }else if(frame==2){
+      state=1;
+    }else if(frame==6){
+      state=2;
+    }else if(frame==30){
+      state=3;
+    }else if(frame==44){
+      state=4;
+    }else if(frame==58){
+      state=5;
+    }
+
+    Friends.drawImage(ServalImage, 320*state,0,320,420,401,233,320,420);
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+
+    if(frame==30){
+      Ball_A();
+      Kaban_A();
+    }
+    if(frame<58){
+      requestAnimationFrame(Friends_animation);
+    }
+  })();
+}
+
+function Serval_B() {
+  var Friends_Canvas = document.getElementById('Serval_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+  var frame = 0;
+
+  (function Friends_animation() {
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.beginPath();
+    Friends.drawImage(ServalImage, 320*6,0,320,420,401,233,320,420);
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+
+    if(frame<22){
+      requestAnimationFrame(Friends_animation);
+    }
+  })();
+}
+
+function Serval_C() {
+  var Friends_Canvas = document.getElementById('Serval_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+  var frame = 0;
+
+  (function Friends_animation() {
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.beginPath();
+    Friends.drawImage(ServalImage, 320*0,0,320,420,401,233,320,420);
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+
+    if(frame<1){
+      requestAnimationFrame(Friends_animation);
+    }
+  })();
+}
+
+function Kaban_A() {
+  var Friends_Canvas = document.getElementById('Kaban_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+  var frame = 0;
+
+  (function Friends_animation() {
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.beginPath();
+    Friends.drawImage(KabanImage, 480*(parseInt(frame/2)%25),0,480,560,750,150,480,560);
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+
+    if(frame<22){
+      requestAnimationFrame(Friends_animation);
+    }
+  })();
+}
+
+
+function Kaban_B() {
+  var Friends_Canvas = document.getElementById('Kaban_Canvas');
+  var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+  var frame = 22;
+
+  (function Friends_animation() {
+    Friends.clearRect(0, 0, Friends_w, Friends_h);
+    Friends.beginPath();
+
+    if(frame<50){
+      Friends.drawImage(KabanImage, 480*(parseInt(frame/2)%25),0,480,560,750,150,480,560);
+    }else if(frame<80){
+      Friends.drawImage(KabanImage,480*24,0,480,560,750,150,480,560);
+    }else{
+      Friends.drawImage(KabanImage,0,0,480,560,750,150,480,560);
+    }
+
+    if(frame==32){
+      if(ball_pos<38&&ball_pos>30){
+        Serval_B();
+        ballstop=1;
+        Ball_B();
+      }
+    }
+
+    Friends.fillStyle = 'white';
+    Friends.fill();
+
+    frame++;
+
+    if(frame<=80){
+　　    requestAnimationFrame(Friends_animation);
+    }
+  })();
+}
+
+function Draw_BackImage(){
+    var Bg_Canvas = document.getElementById('Bg_Canvas');
+    var Bg = Bg_Canvas.getContext('2d');
+    Bg.drawImage(BackImage, 0,0);
+}
+
+function audiotime(time){
+  if(audio.currentTime+0.03>time&&audio.currentTime-0.03<time){
+		ballstop=0;
+		Serval_A();
+  }
+}
+
+// 判定条件の定義
+function dec(){
+  audiotime(2.1);
+  audiotime(4.8);
+  audiotime(6.9);
+  audiotime(9.0);
+  audiotime(10.5);
+  audiotime(13.1);
+  audiotime(15.2);
+  audiotime(17.2);
+  audiotime(18.9);
+  audiotime(21.0);
+  audiotime(23.0);
+  audiotime(25.1);
+  audiotime(27.1);
+  audiotime(29.3);
+  audiotime(31.4);
+  audiotime(33.4);
+  audiotime(35.5);
+  audiotime(39.5);
+}
+
+function title(value){
+  var Friends_Canvas = document.getElementById('Loading');
+	var Friends = Friends_Canvas.getContext('2d');
+  var Friends_w = Friends_Canvas.width;
+  var Friends_h = Friends_Canvas.height;
+
+	if(value==1){
+  	Friends.drawImage(TitleImage, 200,60);
+	  Loaded++;
+	}else{
+		Friends.clearRect(0, 0, Friends_w, Friends_h);
+	}
+}
+
+A=0;
+function KeyPressed(event){
+	if(event.keyCode == 38 || event.keyCode == 40)
+	{
+		autokumay = false;
+	}
+	switch(event.keyCode){
+		case 32:  // H
+			if(A==0){
+		    audio.play();
+	   		title(0);
+		    Boss_A();
+		    A++;
+		  }
+		    Kaban_B()
+		    Serval_C()
+		    break;
+		default:
+			break;
+	}
+}
+
+document.addEventListener("click",TouchEventFunc);
+
+function TouchEventFunc(e){
+			if(A==0){
+        audio.play();
+        title(0);
+        Boss_A();
+		    A++;
+		  }
+		    Kaban_B()
+		    Serval_C()
+		}
+// -->
+</script>
+</body>
+</html>
